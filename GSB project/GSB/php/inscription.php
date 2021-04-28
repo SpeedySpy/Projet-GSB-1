@@ -63,7 +63,7 @@ if(isset($_POST['btn_register'])){
             <input name ="email" type="email" placeholder="Email" required>
           </div>
           <div class="input-box">
-            <span class="details">Login</span>
+            <span class="details">JHJJJ</span>
             <input name ="username" type="login" placeholder="Votre login" required>
           </div>
 
