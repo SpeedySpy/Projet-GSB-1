@@ -1,22 +1,25 @@
 <?php 
 session_start();
 require("./php/db.php");
+
+$_SESSION['reset_succes'] = "";
+$_SESSION['resetPSW_msg'] = "";
 ?>
 <?php
 $msg = ""; 
 if(isset($_POST['submitButton'])) {
   $username = trim($_POST['username']);
   $password = trim($_POST['password']);
+  $user_visiteur = "visiteur";
   if($username != "" && $password != "") {
     try {
-      $query = "select * from users where username=:username and password=:password";
+      $query = "select * from users where username=:username";
       $stmt = $db->prepare($query);
       $stmt->bindParam('username', $username, PDO::PARAM_STR);
-      $stmt->bindValue('password', $password, PDO::PARAM_STR);
       $stmt->execute();
       $count = $stmt->rowCount();
       $row   = $stmt->fetch(PDO::FETCH_ASSOC);
-      if($count == 1 && !empty($row)) {
+      if(password_verify($password, $row['password'])) {
 		$_SESSION['userID'] = $row['id'];
         $_SESSION['username'] = $row['username'];
 		$_SESSION['userEmail'] = $row['email'];
@@ -24,7 +27,10 @@ if(isset($_POST['submitButton'])) {
 		$_SESSION['userPrenom'] =  ucfirst($row['prenom']);
 		$_SESSION['userAdresse'] = $row['adresse'];
 		$_SESSION['userCP'] = $row['cp'];
-		header("Location: ./php/home.php");
+		$_SESSION['userFonction'] = $row['fonction'];
+		if(isset($_SESSION['userFonction'])){
+			if($_SESSION['userFonction'] === "visiteur"){header("Location: ./php/home.php");}else{header("Location: ./php/home_compta.php");}
+		}
       } else {
         $msg = "Identifiant ou mot de passe incorrct";
       }
@@ -73,10 +79,17 @@ if(isset($_POST['submitButton'])) {
 			<div class="wrap-login100">
 				<form class="login100-form validate-form" method="post" id="loginForm">
 				<div style="color:red;text-align:center;">
-				<?php echo '<center>'.$msg.'</center><br>'; ?>
+				<?php echo '<center>'.$msg.'</center><br>';?>
+				</div>
+				<div style="color:green;text-align:center;">
+					<?php 
+					if(isset($_SESSION['msg_reg'])){
+						echo '<center>'.$_SESSION['msg_reg'].'</center><br>';
+					   } 
+					?>
 				</div>
 					<span class="login100-form-title p-b-26">
-						Bienvnu
+						Bienvnue
 					</span>
 					<div class="wrap-input100 validate-input">
 						<input class="input100" type="text" name="username" required>
@@ -98,8 +111,12 @@ if(isset($_POST['submitButton'])) {
 					</div>
 
 					<div class="text-center p-t-115">
-						<a class="txt2" href="#">
+						<a class="txt2" href="php/inscription.php">
 							Créer un nouveau compte ?
+						</a>
+						<br>
+						<a class="txt2" href="pas_restore/restauration.php">
+							Mot de passe oublié ?
 						</a>
 					</div>
 				</form>
